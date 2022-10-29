@@ -1,4 +1,5 @@
 import arcade
+from tile import Tile
 
 
 class Snake:
@@ -10,12 +11,31 @@ class Snake:
         self.time = None
 
     def addKeyToQueue(self, key):
-        self.keyQueue.append(key)
-        print('add key to queue')
-        print(key)
-
         if not self.alive:
             self.alive = True
+
+        # overwrite direction here
+        direction = self.direction
+
+        if direction == None:
+            self.keyQueue.append(key)
+            return
+
+        if self.keyQueue[-1:]:  # -1 causes index out of range exception
+            direction = self.keyQueue[-1:]
+
+        if (key == 'up' or key == 'down') and (direction == 'right' or direction == 'left'):
+            self.keyQueue.append(key)
+
+        if (key == 'right' or key == 'left') and (direction == 'up' or direction == 'down'):
+            self.keyQueue.append(key)
+
+        print(key, direction)
+
+        # if max(self.keyQueue) == 'left' or
+
+        # print('add key to queue')
+        # print(key)
 
     def moving(self, gameTime):
         if gameTime % 15 == 0:
@@ -42,9 +62,8 @@ class Snake:
         self.list.pop(-1)
         print(self.direction)
 
-
-class Tile:
-    def __init__(self, row, col, color):
-        self.row = row
-        self.col = col
-        self.color = color
+    def isSnakeTile(self, tile):
+        for t in self.list:
+            if t.row == tile.row and t.col == tile.col:
+                return True
+        return False

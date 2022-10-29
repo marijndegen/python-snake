@@ -4,7 +4,10 @@ from matplotlib.style import available
 import pyglet
 import time
 import datetime
+import random
+
 from snake import Snake
+from tile import Tile
 
 # screen
 SCREEN_WIDTH = 800
@@ -25,6 +28,7 @@ class PlayBoard(arcade.Window):
         self.snake = Snake()
         self.started = False
         self.gameTime = 0
+        self.foodTile = None
 
     def on_draw(self):
         # Render the screen.
@@ -35,29 +39,40 @@ class PlayBoard(arcade.Window):
         if self.snake.alive:
             self.snake.moving(self.gameTime)
 
-        left, screen_width, bottom, screen_height = self.get_viewport()
-
         # Draw the background
         for row in range(ROWS):
             for column in range(COLS):
-                # Calculate our location
-                x = column * COLUMN_SPACING + \
-                    screen_width // 2 - (ROW_SPACING * ROWS / 2)
-                y = row * ROW_SPACING + screen_height // 2 - \
-                    (COLUMN_SPACING * COLS / 2)
+                x, y = self.calculateRowColPosition(row, column)
                 arcade.draw_xywh_rectangle_filled(
                     x, y, SQUARE_SIZE, SQUARE_SIZE, arcade.color.AO)
 
         # Draw the snake
         for el in self.snake.list:
-            x = el.col * COLUMN_SPACING + \
-                screen_width // 2 - (ROW_SPACING * ROWS / 2)
-            y = el.row * ROW_SPACING + screen_height // 2 - \
-                (COLUMN_SPACING * COLS / 2)
+            x, y = self.calculateRowColPosition(el.row, el.col)
             arcade.draw_xywh_rectangle_filled(
                 x, y, SQUARE_SIZE, SQUARE_SIZE, el.color)
 
+        # Draw the foodtile
+        if isinstance(self.foodTile, Tile):
+            x, y = self.calculateRowColPosition(
+                self.foodTile.row, self.foodTile.col)
+            arcade.draw_xywh_rectangle_filled(
+                x, y, SQUARE_SIZE, SQUARE_SIZE, self.foodTile.color)
+
+    def calculateRowColPosition(self, row, col):
+        # Calculate our location
+        left, screen_width, bottom, screen_height = self.get_viewport()
+        x = col * COLUMN_SPACING + \
+            screen_width // 2 - (ROW_SPACING * ROWS / 2)
+        y = row * ROW_SPACING + screen_height // 2 - \
+            (COLUMN_SPACING * COLS / 2)
+        return (x, y)
+
     def on_key_press(self, key, modifiers):
+        if(not self.started):
+            self.started = True
+            self.foodTile = self.generateFoodTile()
+
         if key == arcade.key.F:
             self.set_fullscreen(not self.fullscreen)
             width, height = self.get_size()
@@ -69,8 +84,14 @@ class PlayBoard(arcade.Window):
         if key in availableKeys.keys() and self.started:
             self.snake.addKeyToQueue(availableKeys[key])
 
-        if(not self.started):
-            self.started = True
+    def generateFoodTile(self):
+        tile = Tile(random.randint(0, ROWS), random.randint(
+            0, COLS), arcade.color.BARBIE_PINK)
+
+        if(self.snake.isSnakeTile(tile)):
+            return self.generateFoodTile()
+
+        return tile
 
         # if key is arcade.key.ENTER and self.started is False:
         #     self.started = True
