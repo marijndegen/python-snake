@@ -39,6 +39,10 @@ class PlayBoard(arcade.Window):
         if self.snake.alive:
             self.snake.moving(self.gameTime)
 
+        if self.snake.alive and self.snake.isSnakeTile(self.foodTile):
+            self.snake.addTile = True
+            self.foodTile = self.generateFoodTile()
+
         # Draw the background
         for row in range(ROWS):
             for column in range(COLS):
@@ -69,7 +73,10 @@ class PlayBoard(arcade.Window):
         return (x, y)
 
     def on_key_press(self, key, modifiers):
-        if(not self.started):
+        availableKeys = {arcade.key.W: 'up', arcade.key.A: 'left',
+                         arcade.key.S: 'down', arcade.key.D: 'right'}
+
+        if(not self.started and key in availableKeys.keys()):
             self.started = True
             self.foodTile = self.generateFoodTile()
 
@@ -78,15 +85,13 @@ class PlayBoard(arcade.Window):
             width, height = self.get_size()
             self.set_viewport(0, width, 0, height)
 
-        availableKeys = {arcade.key.W: 'up', arcade.key.A: 'left',
-                         arcade.key.S: 'down', arcade.key.D: 'right'}
-
-        if key in availableKeys.keys() and self.started:
+        if self.started and key in availableKeys.keys():
             self.snake.addKeyToQueue(availableKeys[key])
+            print('addkey')
 
     def generateFoodTile(self):
-        tile = Tile(random.randint(0, ROWS), random.randint(
-            0, COLS), arcade.color.BARBIE_PINK)
+        tile = Tile(random.randint(0, ROWS - 1), random.randint(
+            0, COLS - 1), arcade.color.BARBIE_PINK)
 
         if(self.snake.isSnakeTile(tile)):
             return self.generateFoodTile()

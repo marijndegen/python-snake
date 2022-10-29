@@ -9,6 +9,7 @@ class Snake:
         self.direction = None
         self.alive = False
         self.time = None
+        self.addTile = False
 
     def addKeyToQueue(self, key):
         if not self.alive:
@@ -21,21 +22,35 @@ class Snake:
             self.keyQueue.append(key)
             return
 
+        print(self.keyQueue)
+
         if self.keyQueue[-1:]:  # -1 causes index out of range exception
             direction = self.keyQueue[-1:]
 
-        if (key == 'up' or key == 'down') and (direction == 'right' or direction == 'left'):
+        print('direction,', direction)
+        print('key,', key)
+
+        if key == 'left' and direction != 'right' and direction != 'left':
             self.keyQueue.append(key)
 
-        if (key == 'right' or key == 'left') and (direction == 'up' or direction == 'down'):
+        if key == 'right' and direction != 'right' and direction != 'left':
             self.keyQueue.append(key)
 
-        print(key, direction)
+        if key == 'up' and direction != 'up' and direction != 'down':
+            self.keyQueue.append(key)
 
-        # if max(self.keyQueue) == 'left' or
+        if key == 'down' and direction != 'up' and direction != 'down':
+            self.keyQueue.append(key)
 
-        # print('add key to queue')
-        # print(key)
+        # if (key == 'up' or key == 'down') and (direction == 'right' or direction == 'left'):
+        #     self.keyQueue.append(key)
+        #     return
+
+        # if (key == 'right' or key == 'left') and (direction == 'up' or direction == 'down'):
+        #     self.keyQueue.append(key)
+        #     return
+
+        # print(key, direction)
 
     def moving(self, gameTime):
         if gameTime % 15 == 0:
@@ -59,8 +74,10 @@ class Snake:
         elif self.direction == "right":
             col += 1
         self.list.insert(0, Tile(row, col, arcade.color.AERO_BLUE))
-        self.list.pop(-1)
-        print(self.direction)
+
+        if not self.addTile:
+            self.list.pop(-1)
+        self.addTile = False
 
     def isSnakeTile(self, tile):
         for t in self.list:
